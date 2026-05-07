@@ -525,7 +525,7 @@ with LEFT:
                                           columns=["Elem","Type","Frame",
                                                    "N (kN)","Vy (kN)","Vz (kN)",
                                                    "My (kNm)","Mz (kNm)"]),
-                             height=320, use_container_width=True)
+                             height=38 + 35 * len(env_rows), use_container_width=True)
 
             st.markdown("**Force diagrams**")
             from modules.visualization import fig_force_diagram
@@ -621,6 +621,8 @@ with LEFT:
 
             ss.design_results = {"beams": beam_results, "columns": col_results}
 
+            ROW_H, HEADER_H = 35, 38   # px per row + header overhead
+
             st.markdown("**Beam (rafter) checks**")
             st.dataframe(pd.DataFrame([{
                 "Member": r.member_label,
@@ -633,7 +635,8 @@ with LEFT:
                 "LTB": round(r.LTB_UR,2),
                 "Defl": round(r.deflection_UR,2),
                 "Result": "✅" if r.pass_fail else "❌",
-            } for r in beam_results]), use_container_width=True, height=200)
+            } for r in beam_results]), use_container_width=True,
+                         height=HEADER_H + ROW_H * len(beam_results))
 
             st.markdown("**Column checks**")
             st.dataframe(pd.DataFrame([{
@@ -648,7 +651,8 @@ with LEFT:
                 "UR(6.23)": round(r.UR_y,2),
                 "UR(6.24)": round(r.UR_z,2),
                 "Result": "✅" if r.pass_fail else "❌",
-            } for r in col_results]), use_container_width=True, height=200)
+            } for r in col_results]), use_container_width=True,
+                         height=HEADER_H + ROW_H * len(col_results))
 
             n_pass = sum(1 for r in beam_results+col_results if r.pass_fail)
             n_tot  = len(beam_results) + len(col_results)
