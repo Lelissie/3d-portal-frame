@@ -133,8 +133,8 @@ ss.setdefault("geom_params", {
     "l_zw_cm": 40.0,
     "n_bays": 4,
     "n_purlins_per_slope": 3,
-    "col_b": 160, "col_h": 800, "col_grade": "GL32h",
-    "raf_b": 160, "raf_h": 900, "raf_grade": "GL32h",
+    "col_b": 200, "col_h": 800, "col_grade": "GL32h",
+    "raf_b": 200, "raf_h": 800, "raf_grade": "GL32h",
     "pur_b": 115, "pur_h": 240, "pur_grade": "GL24h",
 })
 ss.setdefault("appearance", {"view_mode": "Architectural Model"})
@@ -378,24 +378,30 @@ with LEFT:
         cc1, cc2, cc3 = st.columns(3)
         with cc1:
             st.caption("**Column**")
-            p["col_b"] = st.number_input("b (mm)", min_value=80, max_value=400,
-                                         step=10, key="col_b")
-            p["col_h"] = st.number_input("h (mm)", min_value=100, max_value=800,
-                                         step=10, key="col_h")
+            p["col_h"] = st.number_input("h — depth (mm)", min_value=100, max_value=1000,
+                                         step=10, key="col_h",
+                                         help="Structural depth — faces the span; resists in-plane portal bending (strong axis).")
+            p["col_b"] = st.number_input("b — width (mm)", min_value=80, max_value=1000,
+                                         step=10, key="col_b",
+                                         help="Section width — out-of-plane dimension.")
             p["col_grade"] = st.selectbox("grade", grades, key="col_g")
         with cc2:
             st.caption("**Rafter**")
-            p["raf_b"] = st.number_input("b (mm)", min_value=80, max_value=400,
-                                         step=10, key="raf_b")
-            p["raf_h"] = st.number_input("h (mm)", min_value=100, max_value=1200,
-                                         step=10, key="raf_h")
+            p["raf_h"] = st.number_input("h — depth (mm)", min_value=100, max_value=1000,
+                                         step=10, key="raf_h",
+                                         help="Structural depth — perpendicular to rafter axis, in-plane; resists bending (strong axis).")
+            p["raf_b"] = st.number_input("b — width (mm)", min_value=80, max_value=1000,
+                                         step=10, key="raf_b",
+                                         help="Section width — out-of-plane dimension (building depth direction).")
             p["raf_grade"] = st.selectbox("grade", grades, key="raf_g")
         with cc3:
             st.caption("**Purlin**")
-            p["pur_b"] = st.number_input("b (mm)", min_value=60, max_value=240,
-                                         step=10, key="pur_b")
-            p["pur_h"] = st.number_input("h (mm)", min_value=100, max_value=400,
-                                         step=10, key="pur_h")
+            p["pur_h"] = st.number_input("h — depth (mm)", min_value=100, max_value=400,
+                                         step=10, key="pur_h",
+                                         help="Purlin depth — vertical dimension; resists gravity bending.")
+            p["pur_b"] = st.number_input("b — width (mm)", min_value=60, max_value=240,
+                                         step=10, key="pur_b",
+                                         help="Purlin width — horizontal dimension.")
             p["pur_grade"] = st.selectbox("grade", grades, key="pur_g")
 
         with st.expander("Parameter legend"):
@@ -503,7 +509,7 @@ with LEFT:
                                      f"{R[2]/1000:.2f}"])
                 st.dataframe(pd.DataFrame(rxn_rows,
                                           columns=["Node","Rx","Ry","Rz"]),
-                             use_container_width=True, height=200)
+                             use_container_width=True, height=280)
 
             with st.expander("Member-force envelope", expanded=True):
                 env = envelope(ss.results, [e.id for e in geom.elements])
@@ -618,7 +624,7 @@ with LEFT:
             st.markdown("**Beam (rafter) checks**")
             st.dataframe(pd.DataFrame([{
                 "Member": r.member_label,
-                "Sec (mm)": f"{r.section.b_mm:.0f}×{r.section.h_mm:.0f}",
+                "Sec (mm)": f"{r.section.h_mm:.0f}×{r.section.b_mm:.0f}",
                 "Grade": r.grade,
                 "M_Ed": round(r.M_Ed,2),
                 "V_Ed": round(r.V_Ed,2),
@@ -632,7 +638,7 @@ with LEFT:
             st.markdown("**Column checks**")
             st.dataframe(pd.DataFrame([{
                 "Member": r.member_label,
-                "Sec (mm)": f"{r.section.b_mm:.0f}×{r.section.h_mm:.0f}",
+                "Sec (mm)": f"{r.section.h_mm:.0f}×{r.section.b_mm:.0f}",
                 "Grade": r.grade,
                 "N_Ed": round(r.N_Ed,2),
                 "M_y": round(r.M_y_Ed,2),

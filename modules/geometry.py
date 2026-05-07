@@ -94,11 +94,11 @@ class FrameGeometry:
 
     def __post_init__(self):
         if self.column_section is None:
-            self.column_section = Section("C-default", 400, 700, "GL32h")
+            self.column_section = Section("C-default", 200, 800, "GL32h")
         if self.rafter_section is None:
-            self.rafter_section = Section("R-default", 400, 700, "GL32h")
+            self.rafter_section = Section("R-default", 200, 800, "GL32h")
         if self.purlin_section is None:
-            self.purlin_section = Section("P-default", 200, 200, "GL24h")
+            self.purlin_section = Section("P-default", 115, 240, "GL24h")
         # B is computed from n_bays * a if user hasn't overridden consistently
         # but keep explicit B as authoritative; also expose computed
         self.B = self.n_bays * self.a

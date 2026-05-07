@@ -30,9 +30,11 @@ _COLOR = {
 
 # --------------------------------------------------------------------
 def _rect_box_mesh(p_i: np.ndarray, p_j: np.ndarray,
-                   b: float, h: float, local_z: np.ndarray):
+                   depth: float, width: float, local_z: np.ndarray):
     """Return arrays (x, y, z, i, j, k) for a Plotly Mesh3d rectangular prism
-       extruded along axis p_i -> p_j with width b (local-z) and depth h (local-y)."""
+       extruded along axis p_i -> p_j.
+       depth (h) : structural depth — placed in the local-z (span-facing) direction.
+       width (b) : section width   — placed in the local-y (out-of-plane) direction."""
     ex = p_j - p_i
     L = np.linalg.norm(ex)
     if L < 1e-12:
@@ -45,12 +47,12 @@ def _rect_box_mesh(p_i: np.ndarray, p_j: np.ndarray,
     ez /= np.linalg.norm(ez)
     ey = np.cross(ez, ex)
 
-    # 8 corners
+    # 8 corners: depth (h) in local-z direction, width (b) in local-y direction
     corners = []
     for sign_along in (0.0, 1.0):
         for sign_y in (-0.5, +0.5):
             for sign_z in (-0.5, +0.5):
-                p = p_i + sign_along * (p_j - p_i) + sign_y * h * ey + sign_z * b * ez
+                p = p_i + sign_along * (p_j - p_i) + sign_y * width * ey + sign_z * depth * ez
                 corners.append(p)
     P = np.array(corners)
     # Triangulation of a box (12 triangles, 6 faces)
@@ -65,8 +67,9 @@ def _rect_box_mesh(p_i: np.ndarray, p_j: np.ndarray,
     return P, faces
 
 
-def _add_box(fig, p_i, p_j, b, h, local_z, color, name=None, opacity=0.85):
-    out = _rect_box_mesh(np.array(p_i), np.array(p_j), b, h, np.array(local_z))
+def _add_box(fig, p_i, p_j, h, b, local_z, color, name=None, opacity=0.85):
+    """h = structural depth (local-z direction), b = width (local-y direction)."""
+    out = _rect_box_mesh(np.array(p_i), np.array(p_j), h, b, np.array(local_z))
     if out is None: return
     P, faces = out
     fig.add_trace(go.Mesh3d(
@@ -162,7 +165,7 @@ def fig_architectural(geom: FrameGeometry) -> go.Figure:
         ni = geom.nodes[e.i_node - 1]; nj = geom.nodes[e.j_node - 1]
         out = _rect_box_mesh(np.array([ni.x, ni.y, ni.z]),
                              np.array([nj.x, nj.y, nj.z]),
-                             e.section.b, e.section.h, np.array(e.local_z))
+                             e.section.h, e.section.b, np.array(e.local_z))
         if out is None:
             continue
         P, faces = out
